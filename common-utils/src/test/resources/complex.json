@@ -1,0 +1,7 @@
+{
+  "orderId": "1111",
+  "paymentInfo": {
+    "paymentMethod": "wechat",
+    "amount:": 31.24
+  }
+}
