@@ -1,0 +1,9 @@
+{
+  "name": "order",
+  "columns": [
+    {"name": "id", "key": true, "nullable": false, "type": "LONG"},
+    {"name": "name", "key": false, "nullable": false, "type": "STRING"},
+    {"name": "description", "key": false, "nullable": true, "type": "STRING"},
+    {"name": "amount", "key": false, "nullable": false, "type": "DECIMAL"}
+  ]
+}

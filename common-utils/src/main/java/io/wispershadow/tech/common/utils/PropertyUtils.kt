@@ -4,7 +4,7 @@ import org.springframework.beans.BeanWrapper
 import org.springframework.beans.BeanWrapperImpl
 import java.util.regex.Pattern
 
-object PropertyUtil {
+object PropertyUtils {
     private val listPattern = Pattern.compile("(\\[[0-9]+\\])")
 
     fun getPropertyValue(source: Any?, propertyName: String): Any? {

@@ -1,4 +1,4 @@
-package io.wispershadow.tech.common.utils
+package io.wispershadow.tech.common.security
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,6 +28,12 @@ object SignatureUtils {
         }
     }
 
+
+    /**
+     * To Generate a key pair
+     * openssl genrsa -out private.pem 2048
+     * openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+     */
     fun generateSignature(payload: String,  keyString: String): String {
         val privateKey = generatePrivateKey(keyString)
         val sign = Signature.getInstance(SIGNATURE_TYPE)

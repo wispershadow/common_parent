@@ -29,6 +29,7 @@
 		<module>common-datamodel</module>
 		<module>common-rest</module>
         <module>common-springboot-addon</module>
+		<module>common-schema-extension</module>
 	</modules>
 	
 	<dependencyManagement>

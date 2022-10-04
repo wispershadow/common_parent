@@ -9,7 +9,7 @@ class KeepAsJsonDeserializerTest {
 
     @Test
     fun testDeserialize() {
-        val inputStream = KeepAsJsonDeserializerTest::class.java.classLoader.getResourceAsStream("complex.json")
+        val inputStream = KeepAsJsonDeserializerTest::class.java.classLoader.getResourceAsStream("json/complex.json")
         val orderInfo = objectMapper.readValue(inputStream, OrderInfo::class.java)
         Assertions.assertEquals(orderInfo.paymentInfo, "{\"paymentMethod\":\"wechat\",\"amount:\":31.24}")
     }

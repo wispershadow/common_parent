@@ -10,7 +10,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-object ConversionUtil {
+object ConversionUtils {
     private val dateTimeFormatters: MutableMap<String, DateTimeFormatter> = mutableMapOf()
 
     /**

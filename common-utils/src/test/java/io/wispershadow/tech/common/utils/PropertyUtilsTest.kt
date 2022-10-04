@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.BeanWrapperImpl
 import java.math.BigDecimal
 
-class PropertyUtilTest {
+class PropertyUtilsTest {
 
     @Test
     fun testGetSetPropertyNormalBean() {
@@ -21,12 +21,12 @@ class PropertyUtilTest {
                 }
             )
         }
-        PropertyUtil.setPropertyValue(paymentTransaction, "amount", BigDecimal.valueOf(125.12))
-        PropertyUtil.setPropertyValue(paymentTransaction, "payer.country", "CN")
-        PropertyUtil.setPropertyValue(paymentTransaction, "paymentMethods[0].amount", BigDecimal.valueOf(100.00))
-        val amount = PropertyUtil.getPropertyValue(paymentTransaction, "amount")
-        val payerCountry = PropertyUtil.getPropertyValue(paymentTransaction, "payer.country")
-        val paymentAmount = PropertyUtil.getPropertyValue(paymentTransaction, "paymentMethods[0].amount")
+        PropertyUtils.setPropertyValue(paymentTransaction, "amount", BigDecimal.valueOf(125.12))
+        PropertyUtils.setPropertyValue(paymentTransaction, "payer.country", "CN")
+        PropertyUtils.setPropertyValue(paymentTransaction, "paymentMethods[0].amount", BigDecimal.valueOf(100.00))
+        val amount = PropertyUtils.getPropertyValue(paymentTransaction, "amount")
+        val payerCountry = PropertyUtils.getPropertyValue(paymentTransaction, "payer.country")
+        val paymentAmount = PropertyUtils.getPropertyValue(paymentTransaction, "paymentMethods[0].amount")
         Assertions.assertEquals(amount, BigDecimal.valueOf(125.12))
         Assertions.assertEquals(payerCountry, "CN")
         Assertions.assertEquals(paymentAmount, BigDecimal.valueOf(100.00))
@@ -35,8 +35,8 @@ class PropertyUtilTest {
     @Test
     fun testGetSetPropertyMap1() {
         val dataMap = mutableMapOf("transactionId" to "124111")
-        PropertyUtil.setPropertyValue(dataMap, "amount", BigDecimal.valueOf(125.12))
-        val amount = PropertyUtil.getPropertyValue(dataMap, "amount")
+        PropertyUtils.setPropertyValue(dataMap, "amount", BigDecimal.valueOf(125.12))
+        val amount = PropertyUtils.getPropertyValue(dataMap, "amount")
         Assertions.assertEquals(amount, BigDecimal.valueOf(125.12))
     }
 
@@ -49,9 +49,9 @@ class PropertyUtilTest {
                     this.paymentMethodName = "wechat"
                 }
             ))
-        val payerCountry = PropertyUtil.getPropertyValue(dataMap, "payer.country")
+        val payerCountry = PropertyUtils.getPropertyValue(dataMap, "payer.country")
         Assertions.assertEquals(payerCountry, "CN")
-        val paymentMethodName = PropertyUtil.getPropertyValue(dataMap, "paymentMethods[0].paymentMethodName")
+        val paymentMethodName = PropertyUtils.getPropertyValue(dataMap, "paymentMethods[0].paymentMethodName")
         Assertions.assertEquals(paymentMethodName, "wechat")
     }
 
@@ -70,12 +70,12 @@ class PropertyUtilTest {
             )
         }
         val paymentTransactionWrapper = BeanWrapperImpl(paymentTransaction)
-        PropertyUtil.setPropertyValue(paymentTransactionWrapper, "amount", BigDecimal.valueOf(125.12))
-        PropertyUtil.setPropertyValue(paymentTransactionWrapper, "payer.country", "CN")
-        PropertyUtil.setPropertyValue(paymentTransactionWrapper, "paymentMethods[0].amount", BigDecimal.valueOf(100.00))
-        val amount = PropertyUtil.getPropertyValue(paymentTransactionWrapper, "amount")
-        val payerCountry = PropertyUtil.getPropertyValue(paymentTransactionWrapper, "payer.country")
-        val paymentAmount = PropertyUtil.getPropertyValue(paymentTransactionWrapper, "paymentMethods[0].amount")
+        PropertyUtils.setPropertyValue(paymentTransactionWrapper, "amount", BigDecimal.valueOf(125.12))
+        PropertyUtils.setPropertyValue(paymentTransactionWrapper, "payer.country", "CN")
+        PropertyUtils.setPropertyValue(paymentTransactionWrapper, "paymentMethods[0].amount", BigDecimal.valueOf(100.00))
+        val amount = PropertyUtils.getPropertyValue(paymentTransactionWrapper, "amount")
+        val payerCountry = PropertyUtils.getPropertyValue(paymentTransactionWrapper, "payer.country")
+        val paymentAmount = PropertyUtils.getPropertyValue(paymentTransactionWrapper, "paymentMethods[0].amount")
         Assertions.assertEquals(amount, BigDecimal.valueOf(125.12))
         Assertions.assertEquals(payerCountry, "CN")
         Assertions.assertEquals(paymentAmount, BigDecimal.valueOf(100.00))

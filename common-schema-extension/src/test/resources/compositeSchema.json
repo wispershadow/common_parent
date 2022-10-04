@@ -1,0 +1,8 @@
+{
+  "name": "userorder",
+  "columns": [
+    {"name": "orderId", "key": true, "nullable": false, "type": "LONG"},
+    {"name": "userId", "key": true, "nullable": false, "type": "LONG"},
+    {"name": "overdue", "key": false, "nullable": false, "type": "INT"}
+  ]
+}
