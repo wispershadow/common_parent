@@ -6,7 +6,7 @@ import io.wispershadow.tech.common.datamodel.schema.ColumnType
 import io.wispershadow.tech.common.datamodel.schema.Schema
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.springframework.beans.BeanWrapperImpl
+import org.springframework.beans.PropertyAccessorFactory
 import java.math.BigDecimal
 
 class SchemaClassGeneratorTest {
@@ -38,6 +38,6 @@ class SchemaClassGeneratorTest {
     }
 
     private fun getByPropertyName(data: Any, propertyName: String): Any? {
-        return BeanWrapperImpl(data).getPropertyValue(propertyName)
+        return PropertyAccessorFactory.forBeanPropertyAccess(data).getPropertyValue(propertyName)
     }
 }
