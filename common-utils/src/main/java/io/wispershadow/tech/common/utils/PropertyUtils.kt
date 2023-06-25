@@ -1,7 +1,7 @@
 package io.wispershadow.tech.common.utils
 
 import org.springframework.beans.BeanWrapper
-import org.springframework.beans.BeanWrapperImpl
+import org.springframework.beans.PropertyAccessorFactory
 import java.util.regex.Pattern
 
 object PropertyUtils {
@@ -14,7 +14,7 @@ object PropertyUtils {
                 is Map<*, *> -> {
                     getMapProperty(propertyName, source)
                 }
-                else -> BeanWrapperImpl(source).getPropertyValue(propertyName)
+                else -> PropertyAccessorFactory.forBeanPropertyAccess(source).getPropertyValue(propertyName)
             }
         }
     }
@@ -104,7 +104,7 @@ object PropertyUtils {
                     val sourceMap = source as MutableMap<String, Any?>
                     sourceMap[propertyName] = propertyValue
                 }
-                else -> BeanWrapperImpl(source).setPropertyValue(propertyName, propertyValue)
+                else -> PropertyAccessorFactory.forBeanPropertyAccess(source).setPropertyValue(propertyName, propertyValue)
             }
         }
     }

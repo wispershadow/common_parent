@@ -2,7 +2,7 @@ package io.wispershadow.tech.common.utils
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.springframework.beans.BeanWrapperImpl
+import org.springframework.beans.PropertyAccessorFactory
 import java.math.BigDecimal
 
 class PropertyUtilsTest {
@@ -69,7 +69,7 @@ class PropertyUtilsTest {
                 }
             )
         }
-        val paymentTransactionWrapper = BeanWrapperImpl(paymentTransaction)
+        val paymentTransactionWrapper = PropertyAccessorFactory.forBeanPropertyAccess(paymentTransaction)
         PropertyUtils.setPropertyValue(paymentTransactionWrapper, "amount", BigDecimal.valueOf(125.12))
         PropertyUtils.setPropertyValue(paymentTransactionWrapper, "payer.country", "CN")
         PropertyUtils.setPropertyValue(paymentTransactionWrapper, "paymentMethods[0].amount", BigDecimal.valueOf(100.00))
