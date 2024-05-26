@@ -1,0 +1,17 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: beans,configprops,env,logger,health,prometheus
+  endpoint:
+    health:
+      show-components: always
+      show-details: always
+      probes:
+        enabled: true
+      group:
+        custgrp1:
+          include: my,ping
+  health:
+    my:
+      enabled: true
