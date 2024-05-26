@@ -8,9 +8,9 @@ management:
       show-components: always
       show-details: always
       probes:
-        enabled: true
+        enabled: true  # enable kubernetes readiness, liveness endpoint Eg. /actuator/health/liveness, ]/actuator/health/readiness
       group:
-        custgrp1:
+        custgrp1: # custom health group can be accessed by: actuator/health/custgrp1
           include: my,ping
   health:
     my:
