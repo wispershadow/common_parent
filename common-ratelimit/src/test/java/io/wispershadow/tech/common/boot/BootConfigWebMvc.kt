@@ -1,11 +1,11 @@
-package io.wispershadow.tech.common.ratelimit
+package io.wispershadow.tech.common.boot
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.EnableAspectJAutoProxy
-import org.springframework.web.reactive.config.EnableWebFlux
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 @SpringBootApplication(scanBasePackages = ["io.wispershadow.tech.common.ratelimit", "io.github.resilience4j.springboot3.ratelimiter.autoconfigure"])
-@EnableWebFlux
+@EnableWebMvc
 @EnableAspectJAutoProxy
-open class BootConfig {
+open class BootConfigWebMvc {
 }

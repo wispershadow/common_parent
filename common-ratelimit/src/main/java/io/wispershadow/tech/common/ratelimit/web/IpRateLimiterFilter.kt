@@ -1,8 +1,6 @@
 package io.wispershadow.tech.common.ratelimit.web
 
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
-import io.wispershadow.tech.common.ratelimit.reactive.IpRateLimiterWebFilter
-import io.wispershadow.tech.common.ratelimit.reactive.RateLimitKeyGenReactive
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

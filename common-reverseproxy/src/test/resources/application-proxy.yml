@@ -1,0 +1,13 @@
+server:
+  servlet:
+    context-path: /base
+config:
+  wispershadow:
+    common:
+      apacheclient:
+        connection-timeout: 3000
+        read-timeout: 3000
+        connection-time-to-live: 3000
+      reverseproxy:
+        source-uri-prefix: /base/proxy
+        target-uri-root: http://localhost:8543/backend

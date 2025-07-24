@@ -1,33 +1,54 @@
 package io.wispershadow.tech.common.ratelimit.test
 
 import io.github.resilience4j.springboot3.ratelimiter.autoconfigure.RateLimiterProperties
-import io.wispershadow.tech.common.ratelimit.BootConfig
+import io.wispershadow.tech.common.boot.BootConfigWebFlux
 import io.wispershadow.tech.common.ratelimit.config.RedisClientConfig
 import io.wispershadow.tech.common.ratelimit.config.RedisServerConfig
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 
-@EnableAutoConfiguration
 @EnableConfigurationProperties(RateLimiterProperties::class)
-@SpringBootTest(classes = [BootConfig::class, RedisServerConfig::class,
+@SpringBootTest(classes = [BootConfigWebFlux::class,
     RedisClientConfig::class
 ], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = [
-    "spring.main.web-application-type=reactive"
+    "spring.main.web-application-type=reactive",
+    "spring.main.allow-bean-definition-overriding=true"
 ])
 class DisableRateLimitFilterTest {
     private val logger: Logger = LoggerFactory.getLogger(DisableRateLimitFilterTest::class.java)
 
     @Autowired
     private lateinit var webTestClient: WebTestClient
+
+    companion object {
+
+        @JvmStatic
+        lateinit var redisServerConfig: RedisServerConfig
+
+        @JvmStatic
+        @BeforeAll
+        fun beforeTest() {
+            redisServerConfig = RedisServerConfig().apply {
+                this.postConstruct()
+            }
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun afterTest() {
+            redisServerConfig.preDestroy()
+        }
+    }
 
 
     @Test
@@ -42,14 +63,14 @@ class DisableRateLimitFilterTest {
                 .exchange()
                 .expectBody()
                 .consumeWith { response ->
-                    if (200 == response.rawStatusCode) {
+                    if (200 == response.status.value()) {
                         actualResult[i] = true
                         response.responseBody?.let {
                             logger.info("Received response: {}",  String(it, Charsets.UTF_8))
                         }
                     }
                     else {
-                        logger.info("Response code received: {}", response.rawStatusCode)
+                        logger.info("Response code received: {}", response.status.value())
                     }
                 }
         }

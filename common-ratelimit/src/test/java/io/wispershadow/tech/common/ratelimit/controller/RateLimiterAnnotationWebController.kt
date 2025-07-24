@@ -10,7 +10,7 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 @RestController
-open class RateLimiterAnnotationController {
+open class RateLimiterAnnotationWebController {
     @RateLimiter(name = "T(io.wispershadow.tech.common.ratelimit.reactive.RateLimitKeyGenReactive).ip(#request)")
     @RequestMapping(path = ["/byip_anno"], method = [RequestMethod.GET])
     @ResponseBody

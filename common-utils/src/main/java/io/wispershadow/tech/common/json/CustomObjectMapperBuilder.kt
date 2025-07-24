@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerFactory
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.wispershadow.tech.common.config.JsonDeserializeConfig
 import io.wispershadow.tech.common.config.JsonPropertiesInclusionConfig
 import io.wispershadow.tech.common.config.JsonSerializeConfig
@@ -45,7 +46,7 @@ class CustomObjectMapperBuilder(
         return ObjectMapper(null, null, deserializerContext).apply {
             this.serializerFactory = serializerFactory
             this.registerModule(JavaTimeModule())
-            this.registerModule(KotlinModule())
+            this.registerKotlinModule()
             this.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             this.setSerializationInclusion(JsonInclude.Include.NON_NULL)
         }

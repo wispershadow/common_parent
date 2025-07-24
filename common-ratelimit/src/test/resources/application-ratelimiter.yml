@@ -15,5 +15,5 @@ resilience4j:
         timeoutDuration: 5s
       "[/api/path1]":
         limitForPeriod: 1
-        limitRefreshPeriod: 4s
+        limitRefreshPeriod: 3s
         timeoutDuration: 4s

@@ -9,5 +9,6 @@ class HttpClientConfig {
     var maxConnectionPerRoute: Int = 10
     var retriable: Boolean = false
     var maxRetryTimes: Int = 3
-    var retriableExceptions: List<String> = listOf(SSLException::class.java.name)
+    var retryInterval: Long = 1000L
+    //var retriableExceptions: List<String> = listOf(SSLException::class.java.name)
 }
