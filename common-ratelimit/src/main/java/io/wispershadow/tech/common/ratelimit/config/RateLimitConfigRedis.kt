@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.core.ParameterNameDiscoverer
 import org.springframework.core.StandardReflectionParameterNameDiscoverer
 import org.springframework.expression.spel.standard.SpelExpressionParser
@@ -25,6 +26,7 @@ open class RateLimitConfigRedis {
     }
 
     @Bean
+    @Primary
     @ConditionalOnClass(RedissonClient::class)
     open fun getRedisRateLimiterRegistry(
         redissonClient: RedissonClient,
@@ -48,7 +50,7 @@ open class RateLimitConfigRedis {
 
 
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     @ConditionalOnClass(RedissonClient::class)
     open fun spelResolver(
         spelExpressionParser: SpelExpressionParser,
@@ -58,14 +60,14 @@ open class RateLimitConfigRedis {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     @ConditionalOnClass(RedissonClient::class)
     open fun spelExpressionParser(): SpelExpressionParser {
         return SpelExpressionParser()
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @Primary
     @ConditionalOnClass(RedissonClient::class)
     open fun parameterNameDiscoverer(): ParameterNameDiscoverer {
         return StandardReflectionParameterNameDiscoverer()

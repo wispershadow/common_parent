@@ -15,6 +15,8 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.EntityExchangeResult
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.time.Duration
+import java.util.*
+import java.util.concurrent.ArrayBlockingQueue
 
 @EnableAutoConfiguration
 @EnableConfigurationProperties(RateLimiterProperties::class)
@@ -58,6 +60,7 @@ class RateLimitByAnnotationTest {
             .build()
     }
 
+
     @Test
     fun testRateLimitByIp() {
         val sleepInterval = arrayOf(0L, 100L, 100L, 1000L, 2000L)
@@ -90,6 +93,9 @@ class RateLimitByAnnotationTest {
     fun testRateLimitFakeSession() {
        val response = sendRequestWithSessionCookie("12345")
         Assertions.assertEquals(response.status.value(), 403)
+        response.responseBody?.let {
+            logger.info("Received response: {}", String(it, Charsets.UTF_8))
+        }
     }
 
     @Test
@@ -160,6 +166,4 @@ class RateLimitByAnnotationTest {
             .expectBody()
             .returnResult()
     }
-
-
 }

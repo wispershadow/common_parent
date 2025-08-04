@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpStatus
-import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.server.ServerWebExchange
@@ -24,17 +23,18 @@ class SessionIdRateLimiterWebFilter: WebFilter {
     @Autowired
     private lateinit var rateLimiterRegistry: RateLimiterRegistry
 
-    @Autowired
-    private lateinit var httpHandler: HttpHandler
 
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         return SessionUtils.getSessionIdFromServerWebExchange(exchange)
             .map { sessionId ->
-                SessionUtils.getSessionById(sessionId, httpHandler)
-                    .switchIfEmpty(Mono.error(RuntimeException("No web session found for sessionId")))
-                    .flatMap {
-                        doRateLimit(exchange, chain)
-                    }
+               SessionUtils.checkSessionExists(sessionId).flatMap {exists ->
+                   if (exists) {
+                       doRateLimit(exchange, chain)
+                   }
+                   else {
+                       throw RuntimeException("No web session found for sessionId")
+                   }
+               }
             }.orElseGet {
                 logger.debug("No session id found in request, fallback to use default config")
                 doRateLimit(exchange, chain)

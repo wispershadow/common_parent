@@ -22,11 +22,13 @@ import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.Part
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpServerErrorException
 
 object ReverseProxyUtils {
     private val logger: Logger = LoggerFactory.getLogger(ReverseProxyUtils::class.java)
 
-    private val hopByHopHeaders: List<String> = mutableListOf(
+    public val hopByHopHeaders: List<String> = mutableListOf(
         "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
         "te", "trailers", "transfer-encoding", "upgrade"
     )
@@ -49,8 +51,13 @@ object ReverseProxyUtils {
                 val keyValue = attribute.split("=")
                 if (keyValue.isNotEmpty()) {
                     val key = keyValue[0].trim()
-                    val value = URLDecoder.decode(keyValue[1].trim(), StandardCharsets.UTF_8)
                     if (COOKIE_KEY_SAMESITE.equals(key, ignoreCase = true)) {
+                        val value = if (keyValue.size > 1) {
+                            URLDecoder.decode(keyValue[1].trim(), StandardCharsets.UTF_8)
+                        }
+                        else {
+                            ""
+                        }
                         if (COOKIE_VALUE_STRICT.equals(value, ignoreCase = true)) {
                             val requestServerName = servletRequest.serverName
                             val targetUri = URI.create(reverseProxySettingProperties.targetUriRoot)
@@ -69,11 +76,7 @@ object ReverseProxyUtils {
                             requireSecure = true
                         }
                     }
-
-                }
-                else {
-                    val key = attribute.trim()
-                    if (key.equals(COOKIE_KEY_SECURE, ignoreCase = true)) {
+                    else if (COOKIE_KEY_SECURE.equals(key, ignoreCase = true)) {
                         containsSecure = true
                         if (!servletRequest.isSecure) {
                             discardReason.append("Secure flag does not match request protocol")
@@ -81,6 +84,7 @@ object ReverseProxyUtils {
                         }
                     }
                 }
+
             }
             if (requireSecure && !containsSecure) {
                 discardReason.append("Secure flag is required but not set for samesite=none")
@@ -353,6 +357,7 @@ object ReverseProxyUtils {
             }
         }
 
+
         private fun copyResponseHeaders(responseEntity: ResponseEntity<Resource>, servletRequest: HttpServletRequest,
                                         servletResponse: HttpServletResponse, reverseProxySettingProperties: ReverseProxySettingProperties) {
             responseEntity.headers.forEach { headerName, headerValues ->
@@ -443,10 +448,27 @@ object ReverseProxyUtils {
 
     }
 
+    object ErrorHandler {
+        fun handleException(exception: Exception, request: HttpServletRequest,
+                            response: HttpServletResponse,
+                            reverseProxySettingProperties: ReverseProxySettingProperties) {
+            if (exception is HttpClientErrorException) {
+                response.status = exception.statusCode.value()
+                response.outputStream.write(exception.responseBodyAsByteArray)
+            }
+            else if (exception is HttpServerErrorException) {
+                response.status = exception.statusCode.value()
+                response.outputStream.write(exception.responseBodyAsByteArray)
+            }
+            else {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, exception.message)
+            }
+        }
+    }
+
     private fun getHostNameFromUri(targetUri: URI): String {
         return targetUri.host +
                 (if (targetUri.port > 0) ":" + targetUri.port else "")
     }
-
 
 }

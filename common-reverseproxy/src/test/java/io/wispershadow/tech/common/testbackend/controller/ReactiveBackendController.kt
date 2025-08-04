@@ -1,5 +1,6 @@
 package io.wispershadow.tech.common.testbackend.controller
 
+import io.wispershadow.tech.common.reverseproxy.ReverseProxyUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
@@ -93,6 +94,31 @@ open class ReactiveBackendController {
         }
     }
 
+
+    @PostMapping(value = ["/onehopcheck"], consumes = ["application/x-www-form-urlencoded"])
+    fun checkNoOneHopHeader(exchange: ServerWebExchange): Mono<Void> {
+        val headers = exchange.request.headers
+        val invalidHeaders = headers.filter { header ->
+            val headerName = header.key.lowercase()
+            headerName != "connection" && ReverseProxyUtils.hopByHopHeaders.contains(headerName)
+        }
+        val response = exchange.response
+        if (invalidHeaders.isNotEmpty()) {
+            logger.warn("Request contains hop-by-hop headers: {}", invalidHeaders.keys)
+            response.statusCode = HttpStatus.BAD_REQUEST
+            response.headers.contentType = MediaType.TEXT_PLAIN
+            return response.writeWith(
+                Mono.just(response.bufferFactory().wrap(
+                    invalidHeaders.keys.joinToString(", ").toByteArray(Charsets.UTF_8)))
+            )
+        }
+        else {
+            response.statusCode = HttpStatus.OK
+            return Mono.empty()
+        }
+    }
+
+
     @PostMapping(value = ["/upload"], consumes = ["multipart/form-data"])
     fun uploadFileWithoutEntity(@RequestPart("files") filePartFlux: Flux<Part>): Mono<String> {
         return filePartFlux.flatMap { file ->
@@ -133,6 +159,45 @@ open class ReactiveBackendController {
     }
 
 
+    @RequestMapping(method = [RequestMethod.GET, RequestMethod.POST], value = ["/cookie"], produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun responseCookie(request: ServerHttpRequest, response: ServerHttpResponse): Mono<Void> {
+        val caseId = request.queryParams["caseId"]?.first()
+        val cookieAttributes: Map<String, String> = mapOf("cookie1" to "value1", "cookie2" to "value2")
+
+        val cookies = if (caseId == "1") {
+            // samesite=strict, domain name matches
+            buildCookie(cookieAttributes, Optional.of("localhost"), "Strict")
+        }
+        else if (caseId == "2") {
+            // samesite=strict, domain name does not match
+            buildCookie(cookieAttributes, Optional.of("example.com"), "Strict")
+        }
+        else if (caseId == "3") {
+            // samesite=lax, only http get
+            buildCookie(cookieAttributes, Optional.of("localhost"), "Lax")
+        }
+        else if (caseId == "4") {
+            // samesite=none, secure
+            buildCookie(cookieAttributes, Optional.of("localhost"), "None")
+        }
+        else if (caseId == "5") {
+            buildCookie(cookieAttributes, Optional.of("localhost"), "Strict", httpOnly = false, secure = true)
+        }
+        else {
+            emptyList()
+        }
+
+        cookies.forEach { cookie ->
+            response.addCookie(cookie)
+            logger.info("Set cookie: {}={}", cookie.name, cookie.value)
+        }
+        return response.writeWith(Mono.just(
+            response.bufferFactory().wrap("cookie response".toByteArray()
+            )
+        ))
+
+    }
+
 
     @GetMapping(value = ["/redirect"])
     fun redirect(request: ServerHttpRequest, response: ServerHttpResponse): Mono<Void> {
@@ -153,6 +218,14 @@ open class ReactiveBackendController {
     fun notModified(response: ServerHttpResponse): Mono<Void> {
         response.setStatusCode(HttpStatus.NOT_MODIFIED)
         return response.setComplete()
+    }
+
+
+    @GetMapping(value = ["/timeout"])
+    fun timeout(response: ServerHttpResponse): Mono<Void> {
+        return Mono.fromRunnable(Runnable {
+            Thread.sleep(5000) // Simulate a long-running operation
+        })
     }
 
     private fun buildCookie(attributes: Map<String, String>, domain: Optional<String>,

@@ -22,14 +22,14 @@ class SimpleSpelResolver(val expressionParser: SpelExpressionParser,
         val rootObject = SpelRootObject(method, arguments)
         val evaluationContext =
             MethodBasedEvaluationContext(rootObject, method, arguments, this.parameterNameDiscoverer)
-        try {
+        //try {
             val evaluated = expressionParser.parseExpression(spelExpression).getValue(evaluationContext)
             return evaluated?.toString() ?: spelExpression
-        }
-        catch (ex: Exception) {
-            logger.error("Failed to resolve SpEL expression: $spelExpression", ex)
-            return spelExpression
-        }
+        //}
+        //catch (ex: Exception) {
+            //logger.error("Failed to resolve SpEL expression: $spelExpression", ex)
+            //return spelExpression
+        //}
     }
 
 }

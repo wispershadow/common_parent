@@ -71,7 +71,9 @@ class ProxyController {
             )
         } catch (e: Exception) {
             logger.error("Error occurred while processing request", e)
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.message)
+            ReverseProxyUtils.ErrorHandler.handleException(
+                e, request, response, reverseProxySettingProperties
+            )
         }
     }
 }

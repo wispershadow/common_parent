@@ -10,7 +10,7 @@ object RateLimitKeyGen {
 
     private const val SUFFIX_IP = "ip"
     private const val SUFFIX_SESSION = "session"
-    private const val SUFFIX_PATH = "path"
+    private const val PREFIX_PATH = "path"
     private const val DEFAULT_NAME = "default";
     private const val PROXY_HEADER_NAME = "X-FORWARDED-FOR"
 
@@ -43,7 +43,7 @@ object RateLimitKeyGen {
     @JvmStatic
     fun path(parameter: HttpServletRequest): String {
         return Optional.ofNullable(parameter.pathInfo).map {
-            "${it}_${SUFFIX_PATH}"
+            "${PREFIX_PATH}_${it}"
         }.orElseGet {
             DEFAULT_NAME
         }

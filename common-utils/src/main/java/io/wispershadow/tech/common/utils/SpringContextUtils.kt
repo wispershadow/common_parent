@@ -1,5 +1,6 @@
 package io.wispershadow.tech.common.utils
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
@@ -14,12 +15,22 @@ object SpringContextUtils: ApplicationContextAware {
 
 
     @JvmStatic
-    fun <T> getBean(beanClass: Class<T>): T {
-        return applicationContext!!.getBean(beanClass)
+    fun <T> getBean(beanClass: Class<T>): T? {
+        try {
+            return applicationContext!!.getBean(beanClass)
+        }
+        catch (e: NoSuchBeanDefinitionException) {
+            return null
+        }
     }
 
     @JvmStatic
-    fun <T> getBean(name: String, beanClass: Class<T>): T {
-        return applicationContext!!.getBean(name, beanClass)
+    fun <T> getBean(name: String, beanClass: Class<T>): T? {
+        try {
+            return applicationContext!!.getBean(name, beanClass)
+        }
+        catch (e: NoSuchBeanDefinitionException) {
+            return null
+        }
     }
 }

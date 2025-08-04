@@ -1,10 +1,12 @@
 package io.wispershadow.tech.common.reverseproxy.test
 
+import io.wispershadow.tech.common.reverseproxy.ReverseProxyUtils
 import io.wispershadow.tech.common.reverseproxy.config.BootConfigWebMvc
 import io.wispershadow.tech.common.testbackend.config.BootConfigWebFlux
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.context.ConfigurableApplicationContext
@@ -13,6 +15,7 @@ import org.springframework.core.io.Resource
 import org.springframework.http.*
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
 
 class ProxyTest {
@@ -20,6 +23,7 @@ class ProxyTest {
 
     companion object {
         private lateinit var applContextProxy: ConfigurableApplicationContext
+        private val logger = LoggerFactory.getLogger(ProxyTest::class.java)
 
         private lateinit var applContextBackend: ConfigurableApplicationContext
 
@@ -110,6 +114,28 @@ class ProxyTest {
     }
 
     @Test
+    fun testOneHopHeader() {
+        val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
+        val oneHopHeaders = ReverseProxyUtils.hopByHopHeaders
+        val randomHeader = oneHopHeaders.random()
+        val headerValue = if ("transfer-encoding" == randomHeader) {
+            "gzip"
+        }
+        else {
+            "testValue"
+        }
+        logger.info("Random one-hop header selected: {}", randomHeader)
+        val headers = HttpHeaders().apply {
+            this.contentType = MediaType.APPLICATION_FORM_URLENCODED
+            this.add(randomHeader, headerValue)
+        }
+        formData.add("key1", "value1")
+        val requestEntity = HttpEntity(formData, headers)
+        val response = restTemplate.postForEntity("http://localhost:$portProxy/base/proxy/onehopcheck", requestEntity, ByteArray::class.java)
+        Assertions.assertEquals(response.statusCode, HttpStatus.OK)
+    }
+
+    @Test
     fun testNotModified() {
         val response: ResponseEntity<Void> = restTemplate.exchange(
             "http://localhost:$portProxy/base/proxy/notModified",
@@ -135,7 +161,7 @@ class ProxyTest {
             Assertions.assertTrue(resource.exists())
             Assertions.assertEquals(fileName, resource.filename)
             val fileContent = String(resource.inputStream.readAllBytes(), Charsets.UTF_8)
-            println(fileContent)
+            logger.info("File content is: {}", fileContent)
         } ?: run {
             Assertions.fail("Response body is null")
         }
@@ -148,16 +174,99 @@ class ProxyTest {
 
     @Test
     fun testProxyRequestTimeout() {
-
+        try {
+            restTemplate.getForEntity(
+                "http://localhost:$portProxy/base/proxy/timeout",
+                String::class.java
+            )
+            Assertions.fail()
+        }
+        catch (e: Exception) {
+            Assertions.assertTrue(e is HttpServerErrorException)
+        }
     }
 
 
-    fun testResponseCookie() {
-
+    @Test
+    fun testResponseCookieRetainSameSiteStrict() {
+        val requestEntity = HttpEntity(null, null)
+        restTemplate.postForEntity(            "http://localhost:$portProxy/base/proxy/cookie?caseId=1",
+            requestEntity,
+            String::class.java
+        ).also { response ->
+            checkCookieMatch(response)
+        }
     }
 
-    fun testRequestHeaderRemove() {
+    private fun checkCookieMatch(response: ResponseEntity<*>) {
+        Assertions.assertTrue(response.headers.containsKey("Set-Cookie"))
+        val cookieValues = mutableMapOf<String, String>()
+        response.headers["Set-Cookie"]?.forEach {
+            val parts = it.split(";")
+            parts.forEachIndexed {index, part ->
+                val cookieParts = part.split("=")
+                if (index == 0 && cookieParts.size == 2) {
+                    cookieValues[cookieParts[0]] = cookieParts[1]
+                }
+                else if (cookieParts[0] == "Path") {
+                    Assertions.assertTrue(cookieParts[1].startsWith("/base/proxy"))
+                }
+            }
+        }
+        Assertions.assertEquals(cookieValues, mapOf("cookie1" to "value1", "cookie2" to "value2"))
+    }
 
+    @Test
+    fun testResponseCookieDiscardDiffSiteStrict() {
+        val requestEntity = HttpEntity(null, null)
+        restTemplate.postForEntity(            "http://localhost:$portProxy/base/proxy/cookie?caseId=2",
+            requestEntity,
+            String::class.java
+        ).also { response ->
+            Assertions.assertFalse(response.headers.containsKey("Set-Cookie"))
+        }
+    }
+
+    @Test
+    fun testResponseCookieGetSameSiteLax() {
+        restTemplate.getForEntity(            "http://localhost:$portProxy/base/proxy/cookie?caseId=3",
+            String::class.java
+        ).also { response ->
+            checkCookieMatch(response)
+        }
+    }
+
+    @Test
+    fun testResponseCookiePostSameSiteLax() {
+        val requestEntity = HttpEntity(null, null)
+        restTemplate.postForEntity(            "http://localhost:$portProxy/base/proxy/cookie?caseId=3",
+            requestEntity,
+            String::class.java
+        ).also { response ->
+            Assertions.assertFalse(response.headers.containsKey("Set-Cookie"))
+        }
+    }
+
+    @Test
+    fun testResponseCookieSameSiteNone() {
+        val requestEntity = HttpEntity(null, null)
+        restTemplate.postForEntity(            "http://localhost:$portProxy/base/proxy/cookie?caseId=4",
+            requestEntity,
+            String::class.java
+        ).also { response ->
+            Assertions.assertFalse(response.headers.containsKey("Set-Cookie"))
+        }
+    }
+
+    @Test
+    fun testResponseCookieRetainSameSiteStrictInsecure() {
+        val requestEntity = HttpEntity(null, null)
+        restTemplate.postForEntity(            "http://localhost:$portProxy/base/proxy/cookie?caseId=5",
+            requestEntity,
+            String::class.java
+        ).also { response ->
+            Assertions.assertFalse(response.headers.containsKey("Set-Cookie"))
+        }
     }
 
 }
