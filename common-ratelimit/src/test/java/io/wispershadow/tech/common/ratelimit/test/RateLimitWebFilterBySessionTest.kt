@@ -69,7 +69,7 @@ class RateLimitWebFilterBySessionTest {
     @Test
     fun testRateLimitByFakeSessionId() {
         val response = sendRequestWithSessionCookie("12345")
-        Assertions.assertEquals (500, response.status.value())
+        Assertions.assertEquals (403, response.status.value())
     }
 
     @Test

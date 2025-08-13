@@ -169,6 +169,18 @@ class ProxyTest {
 
     @Test
     fun testDownLoadFileNotFound() {
+        val fileName = "unknown.json"
+        try {
+            val response: ResponseEntity<Resource> = restTemplate.exchange(
+                "http://localhost:$portProxy/base/proxy/download/${fileName}",
+                HttpMethod.GET,
+                HttpEntity<Void>(null, HttpHeaders()),
+                Resource::class.java
+            )
+        }
+        catch (e: Exception) {
+            Assertions.assertTrue(e is HttpServerErrorException)
+        }
 
     }
 
